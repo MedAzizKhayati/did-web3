@@ -14,12 +14,13 @@ import IDENTITY_ABI from '@constants/Identity.json';
 import CONTRACT_ADDRESS from '@constants/IdentityIssuerAddress.json';
 import handleTxSuccess from '@utils/handleTxSuccess';
 import handleTxError from '@utils/handleTxError';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function MetaData() {
-  const { isWeb3Enabled } = useMoralis();
+  const { isWeb3Enabled, account } = useMoralis();
   const [lookup, setLookup] = useState({ input: '', value: '' });
   const [name, setName] = useState();
+  const [metaData, setMetaData] = useState({ key: '', value: '' });
   const dispatch = useNotification();
 
   const { runContractFunction: lookupMetadata } = useWeb3Contract({
@@ -33,10 +34,15 @@ export default function MetaData() {
     functionName: 'getName'
   });
 
+  const { runContractFunction: getMetadata } = useWeb3Contract({
+    abi: IDENTITY_ABI,
+    functionName: 'getMetadata'
+  });
+
   const onLookUp = () => {
     if (!(lookup.input && isWeb3Enabled)) return;
     async function lookup_() {
-      const address = await lookupMetadata({
+      const did = await lookupMetadata({
         params: {
           params: {
             _user: lookup.input
@@ -45,11 +51,35 @@ export default function MetaData() {
         onSuccess: handleTxSuccess(dispatch, 'Account found'),
         onError: handleTxError(dispatch)
       });
-      setLookup({ ...lookup, value: address });
-      const name = await getName({ params: { contractAddress: address } });
+      setLookup({ ...lookup, value: did });
+      const name = await getName({ params: { contractAddress: did } });
       setName(name);
     }
     lookup_();
+  };
+
+  useEffect(() => {
+    if (isWeb3Enabled && !lookup.input) {
+      setLookup({ ...lookup, input: account });
+    }
+  }, [account]);
+
+  const onGetMetadata = () => {
+    if (!(lookup.input && isWeb3Enabled)) return;
+    async function getMetadata_() {
+      const value = await getMetadata({
+        params: {
+          contractAddress: lookup.value,
+          params: {
+            _k: metaData.key
+          }
+        },
+        onSuccess: handleTxSuccess(dispatch, 'Metadata Queried'),
+        onError: handleTxError(dispatch)
+      });
+      setMetaData({ ...metaData, value });
+    }
+    getMetadata_();
   };
 
   return (
@@ -61,6 +91,7 @@ export default function MetaData() {
           onChange={(e) => setLookup({ ...lookup, input: e.target.value })}
           w={400}
           placeholder="Enter the DID @Address"
+          value={lookup.input}
         />
         <Text>
           <strong> DID: </strong>
@@ -79,12 +110,17 @@ export default function MetaData() {
         </Flex>
         <HStack alignItems="center" gap={5}>
           <Text fontWeight="bold">MetaData </Text>
-          <Input variant="flushed" placeholder="Key" />
-          <Button size="lg" colorScheme="orange">
+          <Input
+            value={metaData.key}
+            onChange={(e) => setMetaData({ ...metaData, key: e.target.value })}
+            variant="flushed"
+            placeholder="Key"
+          />
+          <Button onClick={onGetMetadata} size="lg" colorScheme="orange">
             GET
           </Button>
           <Box>
-            <Text w="max-content"></Text>
+            <Text w="max-content">{metaData.value}</Text>
           </Box>
         </HStack>
       </Flex>

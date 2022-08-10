@@ -31,6 +31,11 @@ export default function Profile() {
     functionName: 'setName'
   });
 
+  const { runContractFunction: setMetaData } = useWeb3Contract({
+    abi: IDENTITY_ABI,
+    functionName: 'setMetadata'
+  });
+
   useEffect(() => {
     if (!isWeb3Enabled) return;
     async function setup() {
@@ -56,7 +61,6 @@ export default function Profile() {
         placeholders: ['John Doe'],
         button: 'Set Name',
         onClick: async () => {
-          console.log(values.name, did, isWeb3Enabled);
           if (!(values.name && did && isWeb3Enabled)) return;
           async function setName_() {
             await setNameDid({
@@ -73,12 +77,30 @@ export default function Profile() {
         onChange(e) {
           setValues((v) => ({ ...v, name: e.target.value }));
         },
-        value: 'name'
+        keys: ['name']
       },
       {
         label: 'MetaData',
         placeholders: ['Key', 'Value'],
-        button: 'Set MetaData'
+        button: 'Set MetaData',
+        onClick: async () => {
+          if (!(values.key && values.value && did && isWeb3Enabled)) return;
+          async function setMetaData_() {
+            await setMetaData({
+              params: {
+                contractAddress: did,
+                params: { _k: values?.key, _v: values?.value }
+              },
+              onSuccess: handleTxSuccess(dispatchNotification, 'MetaData set'),
+              onError: handleTxError(dispatchNotification)
+            });
+          }
+          setMetaData_();
+        },
+        onChange(e) {
+          setValues((v) => ({ ...v, [e.target.name]: e.target.value }));
+        },
+        keys: ['key', 'value']
       },
       {
         label: 'Grant Write Access',
@@ -91,7 +113,7 @@ export default function Profile() {
         button: 'Revoke'
       }
     ]);
-  }, []);
+  }, [values]);
 
   return (
     <Box p={20} pt={10}>
@@ -116,7 +138,8 @@ export default function Profile() {
                 placeholder={placeholder}
                 size="lg"
                 onChange={form.onChange}
-                value={form.value && values[form.value]}
+                value={form?.keys?.[index] && values[form.keys[index]]}
+                name={form?.keys?.[index]}
               />
             ))}
           </Flex>
