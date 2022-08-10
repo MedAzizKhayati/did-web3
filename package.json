@@ -1,4 +1,7 @@
 {
+  "main": "index.js",
+  "author": "MedAzizKhayati <mohamedazizkhayati@insat.u-carthage.tn>",
+  "license": "MIT",
   "name": "did-demo",
   "version": "0.1.0",
   "private": true,
@@ -9,9 +12,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.0.4",
+    "@chakra-ui/react": "1.8.8",
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
+    "framer-motion": "^3.10.6",
+    "hamburger-react": "^2.5.0",
     "next": "12.2.4",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-countup": "^6.3.0",
+    "react-dom": "18.2.0",
+    "react-icons": "^4.4.0",
+    "react-reveal": "^1.2.2",
+    "react-visibility-sensor": "^5.1.1",
+    "web3uikit": "^0.1.170",
+    "moralis": "^1.8.0"
   },
   "devDependencies": {
     "eslint": "8.21.0",
