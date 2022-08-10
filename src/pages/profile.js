@@ -10,7 +10,7 @@ import { useNotification } from 'web3uikit';
 
 export default function Profile() {
   const { isWeb3Enabled, account } = useMoralis();
-  const [values, setValues] = useState({name: ''});
+  const [values, setValues] = useState({ name: '' });
   const [did, setDid] = useState('');
   const [formData, setFormData] = useState([]);
   const dispatchNotification = useNotification();
@@ -56,12 +56,13 @@ export default function Profile() {
         placeholders: ['John Doe'],
         button: 'Set Name',
         onClick: async () => {
+          console.log(values.name, did, isWeb3Enabled);
           if (!(values.name && did && isWeb3Enabled)) return;
           async function setName_() {
             await setNameDid({
               params: {
                 contractAddress: did,
-                params: [values.name]
+                params: { _name: values?.name }
               },
               onSuccess: handleTxSuccess(dispatchNotification, 'Name set'),
               onError: handleTxError(dispatchNotification)
